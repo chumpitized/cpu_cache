@@ -19,6 +19,8 @@ typedef struct Mem_Block {
 	u8 value;
 } Mem_Block;
 
+Color OFFWHITE = Color{220, 220, 220, 255};
+
 std::vector<Mem_Block> memory;
 std::vector<u16> cache(4, 0);
 std::vector<Color> colors {
@@ -31,7 +33,7 @@ std::vector<Color> colors {
 void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) {
 	for (u8 i = 0; i < 16; ++i) {
 		Mem_Block block = Mem_Block {
-			.color = i & 1 ? LIGHTGRAY : GRAY,
+			.color = i & 1 ? RAYWHITE : OFFWHITE,
 
 			.x_offset = x_offset,
 			.y_offset = y_offset + (i * height),
@@ -57,15 +59,27 @@ void try_select_memory(Vector2 mouse_pos, int cache_size) {
 				Mem_Block& mem = memory[j];
 
 				if (j % cache_size == i % cache_size) {
+					mem.selected = true;
 					mem.color = colors[(j % cache_size)];
+					mem.width = 225;
 				} else {
-					mem.color = j & 1 ? RAYWHITE: Color{220, 220, 220, 255};
+					mem.selected = false;
+					mem.color = j & 1 ? RAYWHITE : OFFWHITE;
+					mem.width = 200;
 				}
 
 			}
 			
 			return;
 		}
+	}
+
+
+	//if nothing selected, reset all memory
+	for (int i = 0; i < memory.size(); ++i) {
+		memory[i].color = i & 1 ? RAYWHITE : OFFWHITE;
+		memory[i].selected = false;
+		memory[i].width = 200;
 	}
 }
 
@@ -95,7 +109,7 @@ void draw_memory() {
 	for (int i = 0; i < memory.size(); ++i) {
 		int y_offset_inc = y_offset + (i * 50);
 
-		DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
+		DrawRectangle(x_offset, y_offset_inc, memory[i].width, height, memory[i].color);
 
 		char hex_buffer[9];
 		auto hex_code = sprintf(hex_buffer, "0x%02X", memory[i].value);
