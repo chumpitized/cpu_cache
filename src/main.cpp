@@ -25,7 +25,7 @@ std::vector<Color> colors {
 	ORANGE,
 	BLUE,
 	GREEN,
-	YELLOW
+	MAGENTA
 };
 
 void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) {
@@ -59,7 +59,7 @@ void try_select_memory(Vector2 mouse_pos, int cache_size) {
 				if (j % cache_size == i % cache_size) {
 					mem.color = colors[(j % cache_size)];
 				} else {
-					mem.color = j & 1 ? LIGHTGRAY : GRAY;
+					mem.color = j & 1 ? RAYWHITE: Color{220, 220, 220, 255};
 				}
 
 			}
@@ -95,8 +95,7 @@ void draw_memory() {
 	for (int i = 0; i < memory.size(); ++i) {
 		int y_offset_inc = y_offset + (i * 50);
 
-		if (memory[i].value & 1) DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
-		else DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
+		DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
 
 		char hex_buffer[9];
 		auto hex_code = sprintf(hex_buffer, "0x%02X", memory[i].value);
