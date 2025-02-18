@@ -257,6 +257,20 @@ void draw_cache(u8 block_width) {
 	}
 }
 
+void reset_instructions() {
+	if (IsKeyPressed(KEY_R)) {
+		instruction_pointer = 0;
+
+		for (auto& mem : ram) {
+			mem.value = 0;
+		}
+
+		for (auto& mem : cache) {
+			mem.value = 0;
+		}
+	}
+}
+
 void draw_instruction_text(const char* text, int x_offset, int y_offset, int inst_box_width, int inst_box_height, int font_size, Color color) {
 	int text_width 	= MeasureText(text, font_size);
 	int adjusted_x 	= x_offset + ((inst_box_width - text_width) / 2);
@@ -288,6 +302,10 @@ void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_
 		if (i == 2) {
 			draw_instruction_text("int c = a + b", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
+
+		if (i == 3) {
+			draw_instruction_text("c + 1", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+		}
 	}
 }
 
@@ -310,6 +328,10 @@ void process_instruction_and_inc_instruction_pointer() {
 		cache[0].value = 5;
 		cache[1].value = 3;
 		ram[2].value = 8;
+	}
+
+	if (i == 3) {
+		cache[2].value = 8;
 	}
 
 	instruction_pointer++;
@@ -354,6 +376,7 @@ int main() {
 			draw_name("Instructions", inst_x_offset, y_offset, 50);
 
 			process_instruction();
+			reset_instructions();
 
 			draw_ram(block_width);
 			draw_cache(block_width);
