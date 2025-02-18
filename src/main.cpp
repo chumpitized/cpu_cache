@@ -2,6 +2,11 @@
 #include <iostream>
 #include <vector>
 
+Color orange	= Color{239, 156, 102, 255};
+Color yellow	= Color{252, 220, 148, 255};
+Color green 	= Color{200, 207, 160, 255};
+Color blue 		= Color{120, 171, 168, 255};
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 
@@ -24,10 +29,10 @@ Color OFFWHITE = Color{220, 220, 220, 255};
 std::vector<Mem_Block> ram;
 std::vector<Mem_Block> cache;
 std::vector<Color> colors {
-	ORANGE,
-	BLUE,
-	GREEN,
-	MAGENTA
+	orange,
+	yellow,
+	green,
+	blue
 };
 
 void fill_mem_array(int fill_size, u16 x_offset, u16 y_offset, u8 width, u8 height, std::vector<Mem_Block>& mem_array) {
