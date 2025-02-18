@@ -43,12 +43,14 @@ void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) 
 
 			.selected = false,
 
-			.value = i,
+			.value = 0,
 		};
-		
+
 		memory.push_back(block);
 	}
 }
+
+
 
 void try_select_memory(Vector2 mouse_pos, int cache_size) {
 	for (int i = 0; i < memory.size(); ++i) {
@@ -83,6 +85,19 @@ void try_select_memory(Vector2 mouse_pos, int cache_size) {
 	}
 }
 
+void draw_lines() {
+	for (int i = 0; i < memory.size(); ++i) {
+		Mem_Block mem = memory[i];
+		
+		if (mem.selected) {
+			Vector2 start_pos 	= Vector2{mem.x_offset + mem.width - 5, mem.y_offset + (mem.height / 2)};
+			Vector2 end_pos		= Vector2{750, 125};
+
+			DrawLineEx(start_pos, end_pos, 5, mem.color);
+		}
+	}
+}
+
 void handle_mouse_click() {
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		Vector2 mouse_pos = GetMousePosition();
@@ -90,7 +105,6 @@ void handle_mouse_click() {
 		try_select_memory(mouse_pos, 4);
 		//try_select_cache(mouse_pos);
 	}
-
 }
 
 void draw_memory() {
@@ -166,6 +180,8 @@ int main() {
 			handle_mouse_click();
 
 			DrawFPS(0, 0);
+
+			draw_lines();
 		EndDrawing();
 
 	}
