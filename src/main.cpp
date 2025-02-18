@@ -127,58 +127,70 @@ void handle_mouse_click() {
 	}
 }
 
-void draw_ram() {
-	int x_offset = 50;
-	int y_offset = 100;
-
-	DrawText("RAM", x_offset, (y_offset - 50) / 2, 50, RAYWHITE);
-
-	int width = 200;
-	int height = 50;
-
-	int font_size = 30;
-	int font_y_offset = (height - font_size) / 2;
-	int font_x_offset = x_offset + (width - MeasureText("0x00", font_size)) / 2;
-
+void draw_ram(u8 block_width) {
 	for (int i = 0; i < ram.size(); ++i) {
-		int y_offset_inc = y_offset + (i * 50);
+		Mem_Block mem = ram[i];
 
-		DrawRectangle(x_offset, y_offset_inc, ram[i].width, height, ram[i].color);
+		//Draw Index
+		Color color = colors[i % 4];
+
+		DrawRectangle(mem.x_offset - 70, mem.y_offset, 70, mem.height, color);
+		
+		int font_size = 20;
+		int font_y_offset = (mem.height - font_size) / 2;
+		//int font_x_offset = (mem.x_offset - 70) + (70 - MeasureText("0x00", font_size)) / 2;
+
+		u8 value = (u8)i;
+
+		char index_buffer[5];
+		for (int i = 3; i >= 0; --i) {
+			index_buffer[i] = (value & 1) ? '1' : '0';
+			value >>= 1;
+		}
+
+		int font_x_offset = (mem.x_offset - 70) + (70 - MeasureText(index_buffer, font_size)) / 2;
+
+		DrawText(index_buffer, font_x_offset, mem.y_offset + font_y_offset, font_size, BLACK);
+
+
+		//Draw Memory Block
+		DrawRectangle(mem.x_offset, mem.y_offset, mem.width, mem.height, mem.color);
+
+		font_size = 30;
+		font_y_offset = (mem.height - font_size) / 2;
+		font_x_offset = mem.x_offset + (block_width - MeasureText("0x00", font_size)) / 2;
 
 		char hex_buffer[9];
-		auto hex_code = sprintf(hex_buffer, "0x%02X", ram[i].value);
+		auto hex_code = sprintf(hex_buffer, "0x%02X", mem.value);
 
-		DrawText(hex_buffer, font_x_offset, y_offset_inc + font_y_offset, font_size, BLACK);
+		DrawText(hex_buffer, font_x_offset, mem.y_offset + font_y_offset, font_size, BLACK);
 	}
 }
 
-void draw_cache() {
-	int x_offset = 750;
-	int y_offset = 100;
 
-	DrawText("Cache", x_offset, (y_offset - 50) / 2, 50, RAYWHITE);
-
-	int width = 200;
-	int height = 50;
-
-	int font_size = 30;
-	int font_y_offset = (height - font_size) / 2;
-	int font_x_offset = x_offset + (width - MeasureText("0x00", font_size)) / 2;
-
+void draw_cache(u8 block_width) {
 	for (int i = 0; i < cache.size(); ++i) {
-		int y_offset_inc = y_offset + (i * 50);
+		Mem_Block mem = cache[i];
 
-		DrawRectangle(x_offset, y_offset_inc, cache[i].width, height, cache[i].color);
+		DrawRectangle(mem.x_offset, mem.y_offset, mem.width, mem.height, mem.color);
+
+		int font_size = 30;
+		int font_y_offset = (mem.height - font_size) / 2;
+		int font_x_offset = mem.x_offset + (block_width - MeasureText("0x00", font_size)) / 2;
 
 		char hex_buffer[9];
-		auto hex_code = sprintf(hex_buffer, "0x%02X", cache[i].value);
+		auto hex_code = sprintf(hex_buffer, "0x%02X", mem.value);
 
-		DrawText(hex_buffer, font_x_offset, y_offset_inc + font_y_offset, font_size, BLACK);
+		DrawText(hex_buffer, font_x_offset, mem.y_offset + font_y_offset, font_size, BLACK);
 	}
+}
+
+void draw_memory_name(const char* name, u16 x_offset, u16 y_offset, int font_size) {
+	DrawText(name, x_offset, (y_offset - font_size) / 2, font_size, RAYWHITE);
 }
 
 int main() {
-	u16 ram_x_offset = 50;
+	u16 ram_x_offset 	= 100;
 	u16 cache_x_offset	= 750; 
 	u16 y_offset 		= 100;
 
@@ -196,8 +208,11 @@ int main() {
 		BeginDrawing();
 			ClearBackground(Color{5, 5, 5, 255});
 			
-			draw_ram();
-			draw_cache();
+			draw_memory_name("RAM", ram_x_offset, y_offset, 50);
+			draw_memory_name("Cache", cache_x_offset, y_offset, 50);
+
+			draw_ram(block_width);
+			draw_cache(block_width);
 			handle_mouse_click();
 
 			DrawFPS(0, 0);
