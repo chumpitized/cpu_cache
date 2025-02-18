@@ -238,7 +238,7 @@ void draw_cache(u8 block_width) {
 			DrawText("Tag", tag_font_x, tag_font_y, font_size, BLACK);
 
 			//Draw Cache Value Tag
-			if (mem.value == 0) {
+			if (mem.value > 0) {
 				u8 tag = mem.tag;
 
 				for (int j = 1; j >= 0; --j) {
@@ -257,38 +257,68 @@ void draw_cache(u8 block_width) {
 	}
 }
 
-void draw_instruction_text(const char* text, int x_offset, int y_offset, int inst_box_width, int inst_box_height, int font_size) {
+void draw_instruction_text(const char* text, int x_offset, int y_offset, int inst_box_width, int inst_box_height, int font_size, Color color) {
 	int text_width 	= MeasureText(text, font_size);
 	int adjusted_x 	= x_offset + ((inst_box_width - text_width) / 2);
 	int adjusted_y	= y_offset + ((inst_box_height - font_size) / 2);
 
-	DrawText(text, adjusted_x, adjusted_y, font_size, RED);
+	DrawText(text, adjusted_x, adjusted_y, font_size, color);
 }
 
 void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_box_height, u16 inst_font_size) {
+	int ip 		= instruction_pointer;
+	Color color = BLACK;
+
 	for (int i = 0; i < 20; ++i) {
+		if (ip == i) color = RED;
+
 		int adjusted_y = y_offset + (i * inst_box_height);
 
 		if (i & 1) DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, WHITE);
 		else DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, LIGHTGRAY);
 
-
 		if (i == 0) {
-			draw_instruction_text("int a = 5", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size);
+			draw_instruction_text("int a = 5", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 1) {
-			draw_instruction_text("int b = 3", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size);
+			draw_instruction_text("int b = 3", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 2) {
-			draw_instruction_text("int c = a + b", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size);
+			draw_instruction_text("int c = a + b", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 	}
 }
 
 void draw_instruction_pointer(float x_offset, float y_offset, float inst_box_width, float inst_box_height) {
 	DrawRectangleLinesEx(Rectangle{x_offset, y_offset + (instruction_pointer * inst_box_height), inst_box_width, inst_box_height}, 3, RED);
+}
+
+void process_instruction_and_inc_instruction_pointer() {
+	u8& i = instruction_pointer;
+
+	if (i == 0) {
+		ram[0].value = 5;
+	}
+
+	if (i == 1) {
+		ram[1].value = 3;
+	}
+
+	if (i == 2) {
+		cache[0].value = 5;
+		cache[1].value = 3;
+		ram[2].value = 8;
+	}
+
+	instruction_pointer++;
+}
+
+void process_instruction() {
+	if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+		process_instruction_and_inc_instruction_pointer();
+	}	
 }
 
 void draw_name(const char* name, u16 x_offset, u16 y_offset, int font_size) {
@@ -323,6 +353,7 @@ int main() {
 			draw_name("Cache", cache_x_offset, y_offset, 50);
 			draw_name("Instructions", inst_x_offset, y_offset, 50);
 
+			process_instruction();
 
 			draw_ram(block_width);
 			draw_cache(block_width);
