@@ -31,6 +31,8 @@ std::vector<Color> colors {
 void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) {
 	for (u8 i = 0; i < 16; ++i) {
 		Mem_Block block = Mem_Block {
+			.color = i & 1 ? LIGHTGRAY : GRAY,
+
 			.x_offset = x_offset,
 			.y_offset = y_offset + (i * height),
 
@@ -46,14 +48,23 @@ void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) 
 	}
 }
 
-void try_select_memory(Vector2 mouse_pos) {
+void try_select_memory(Vector2 mouse_pos, int cache_size) {
 	for (int i = 0; i < memory.size(); ++i) {
-		Mem_Block mem = memory[i];
+		Mem_Block& mem = memory[i];
 
-		if (mouse_pos.x < mem.width && mouse_pos.y > mem.y_offset && mouse_pos.y <= mem.y_offset + mem.height) {
-			Rectangle rec = Rectangle{(float)mem.x_offset, (float)mem.y_offset, (float)mem.width, (float)mem.height};			
-				DrawRectangleLinesEx(rec, 5, RED);
-				return;	
+		if (mouse_pos.x > mem.x_offset && mouse_pos.x < mem.x_offset + mem.width && mouse_pos.y > mem.y_offset && mouse_pos.y <= mem.y_offset + mem.height) {
+			for (int j = 0; j < memory.size(); j++) {
+				Mem_Block& mem = memory[j];
+
+				if (j % cache_size == i % cache_size) {
+					mem.color = colors[(j % cache_size)];
+				} else {
+					mem.color = j & 1 ? LIGHTGRAY : GRAY;
+				}
+
+			}
+			
+			return;
 		}
 	}
 }
@@ -62,7 +73,7 @@ void handle_mouse_click() {
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		Vector2 mouse_pos = GetMousePosition();
 		
-		try_select_memory(mouse_pos);
+		try_select_memory(mouse_pos, 4);
 		//try_select_cache(mouse_pos);
 	}
 
@@ -84,8 +95,8 @@ void draw_memory() {
 	for (int i = 0; i < memory.size(); ++i) {
 		int y_offset_inc = y_offset + (i * 50);
 
-		if (memory[i].value & 1) DrawRectangle(x_offset, y_offset_inc, width, height, LIGHTGRAY);
-		else DrawRectangle(x_offset, y_offset_inc, width, height, GRAY);
+		if (memory[i].value & 1) DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
+		else DrawRectangle(x_offset, y_offset_inc, width, height, memory[i].color);
 
 		char hex_buffer[9];
 		auto hex_code = sprintf(hex_buffer, "0x%02X", memory[i].value);
