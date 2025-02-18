@@ -5,14 +5,6 @@
 typedef uint8_t u8;
 typedef uint16_t u16;
 
-std::vector<u16> cache(4, 0);
-std::vector<Color> colors {
-	ORANGE,
-	BLUE,
-	GREEN,
-	YELLOW
-};
-
 typedef struct Mem_Block {
 	Color color;
 
@@ -28,18 +20,17 @@ typedef struct Mem_Block {
 } Mem_Block;
 
 std::vector<Mem_Block> memory;
+std::vector<u16> cache(4, 0);
+std::vector<Color> colors {
+	ORANGE,
+	BLUE,
+	GREEN,
+	YELLOW
+};
 
-void fill_memory(int cache_size) {
-	u8 x_offset = 50;
-	u8 y_offset = 100;
-
-	u8 width = 200;
-	u8 height = 50;
-
+void fill_memory(int cache_size, u8 x_offset, u8 y_offset, u8 width, u8 height) {
 	for (u8 i = 0; i < 16; ++i) {
 		Mem_Block block = Mem_Block {
-			.color = colors[(i / cache_size)],
-
 			.x_offset = x_offset,
 			.y_offset = y_offset + (i * height),
 
@@ -53,27 +44,16 @@ void fill_memory(int cache_size) {
 		
 		memory.push_back(block);
 	}
-
 }
 
-
 void try_select_memory(Vector2 mouse_pos) {
-	int x_offset = 50;
-	int y_offset = 100;
-
-	mouse_pos.x -= x_offset;
-	mouse_pos.y -= y_offset;
-
-	int width = 200;
-	int height = 50;
-
-	int index = 0;
-
 	for (int i = 0; i < memory.size(); ++i) {
-		if (mouse_pos.x <= width && mouse_pos.y <= (i * height)) {
-			Rectangle rec = Rectangle{(float)x_offset, (float)y_offset + (i * height), (float)width, (float)height};			
-			DrawRectangleLinesEx(rec, 5, RED);
-			return;
+		Mem_Block mem = memory[i];
+
+		if (mouse_pos.x < mem.width && mouse_pos.y > mem.y_offset && mouse_pos.y <= mem.y_offset + mem.height) {
+			Rectangle rec = Rectangle{(float)mem.x_offset, (float)mem.y_offset, (float)mem.width, (float)mem.height};			
+				DrawRectangleLinesEx(rec, 5, RED);
+				return;	
 		}
 	}
 }
@@ -92,7 +72,7 @@ void draw_memory() {
 	int x_offset = 50;
 	int y_offset = 100;
 
-	DrawText("Memory", x_offset, (y_offset - 50) / 2, 50, BLACK);
+	DrawText("Memory", x_offset, (y_offset - 50) / 2, 50, RAYWHITE);
 
 	int width = 200;
 	int height = 50;
@@ -118,7 +98,7 @@ void draw_cache() {
 	int x_offset = 750;
 	int y_offset = 100;
 
-	DrawText("Cache", x_offset, (y_offset - 50) / 2, 50, BLACK);
+	DrawText("Cache", x_offset, (y_offset - 50) / 2, 50, RAYWHITE);
 
 	int width = 200;
 	int height = 50;
@@ -141,20 +121,25 @@ void draw_cache() {
 }
 
 int main() {
-	fill_memory(4);
+	u8 x_offset = 50;
+	u8 y_offset = 100;
 
-	SetTargetFPS(20);
+	u8 width = 200;
+	u8 height = 50;
+
+	fill_memory(4, x_offset, y_offset, width, height);
+
+	SetTargetFPS(60);
 	InitWindow(1000, 1000, "CPU Cache");
 
 	while (!WindowShouldClose()) {
 
 		BeginDrawing();
-			ClearBackground(YELLOW);
+			ClearBackground(Color{5, 5, 5, 255});
 			
 			draw_memory();
 			draw_cache();
 			handle_mouse_click();
-
 
 			DrawFPS(0, 0);
 		EndDrawing();
