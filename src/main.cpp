@@ -22,6 +22,8 @@ typedef struct Mem_Block {
 	bool selected;
 
 	u8 value;
+
+	u8 tag;
 } Mem_Block;
 
 Color OFFWHITE = Color{220, 220, 220, 255};
@@ -49,6 +51,8 @@ void fill_mem_array(int fill_size, u16 x_offset, u16 y_offset, u8 width, u8 heig
 			.selected = false,
 
 			.value = 0,
+
+			.tag = (0b00001100 & i) >> 2
 		};
 
 		mem_array.push_back(block);
@@ -62,9 +66,11 @@ void try_select(Vector2 mouse_pos, int cache_size) {
 	if (mouse_pos.x > mem.x_offset && 
 		mouse_pos.x < mem.x_offset + mem.width && 
 		mouse_pos.y > mem.y_offset && 
-		mouse_pos.y <= mem.y_offset + (mem.height * ram.size())) {
-
+		mouse_pos.y <= mem.y_offset + (mem.height * ram.size())
+	) {
 		int selected_index = (mouse_pos.y - mem.y_offset) / mem.height;
+
+		cache[selected_index % cache_size].tag = ram[selected_index].tag;
 
 		for (int j = 0; j < ram.size(); j++) {
 			int cache_index = j % cache_size;
@@ -143,7 +149,6 @@ void draw_ram(u8 block_width) {
 		
 		int font_size = 20;
 		int font_y_offset = (mem.height - font_size) / 2;
-		//int font_x_offset = (mem.x_offset - 70) + (70 - MeasureText("0x00", font_size)) / 2;
 
 		u8 value = (u8)i;
 
@@ -153,10 +158,9 @@ void draw_ram(u8 block_width) {
 			value >>= 1;
 		}
 
+		//center index in rect
 		int font_x_offset = (mem.x_offset - 70) + (70 - MeasureText(index_buffer, font_size)) / 2;
-
 		DrawText(index_buffer, font_x_offset, mem.y_offset + font_y_offset, font_size, BLACK);
-
 
 		//Draw Memory Block
 		DrawRectangle(mem.x_offset, mem.y_offset, mem.width, mem.height, mem.color);
@@ -187,6 +191,67 @@ void draw_cache(u8 block_width) {
 		auto hex_code = sprintf(hex_buffer, "0x%02X", mem.value);
 
 		DrawText(hex_buffer, font_x_offset, mem.y_offset + font_y_offset, font_size, BLACK);
+
+		if (mem.selected) {
+			int box_width = 98;
+			int label_y_offset = mem.y_offset + (mem.height * (cache.size() - i)) + 5;
+
+			int value_x_offset_left 	= mem.x_offset;
+			int value_x_offset_right 	= mem.x_offset + (mem.width - box_width);
+			int value_y_offset 			= label_y_offset + (mem.height / 1.5) + 5;
+			
+			//Draw Label Boxes
+			DrawRectangle(mem.x_offset, label_y_offset, box_width, mem.height / 1.5, mem.color);
+			DrawRectangle(mem.x_offset + (mem.width - box_width), label_y_offset, box_width, mem.height / 1.5, mem.color);
+
+			//Draw Value boxes
+			DrawRectangle(value_x_offset_left, value_y_offset, box_width, mem.height, mem.color);
+			DrawRectangle(value_x_offset_right, value_y_offset, box_width, mem.height, mem.color);
+
+			//Draw Cache Line Index
+			u8 index = (u8)i;
+			char buffer[3];
+			for (int j = 1; j >= 0; --j) {
+				buffer[j] = index & 1 ? '1' : '0';
+				index >>= 1;
+			}
+			buffer[2] = '\0';
+			
+			font_size = 20;
+			font_y_offset = (mem.height - font_size) / 2;
+			font_x_offset = mem.x_offset + (box_width - MeasureText(buffer, font_size)) / 2;
+
+			DrawText(buffer, font_x_offset, value_y_offset + font_y_offset, font_size, BLACK);
+
+			//Draw Index Label
+			int index_font_x = mem.x_offset + (box_width - MeasureText("Index", font_size)) / 2;
+			int index_font_y = label_y_offset + (mem.height / 1.5 - font_size) / 2;
+
+			DrawText("Index", index_font_x, index_font_y, font_size, BLACK);
+
+			//Draw Tag Label
+			int tag_font_x = mem.x_offset + 102 + (box_width - MeasureText("Tag", font_size)) / 2;
+			int tag_font_y = label_y_offset + (mem.height / 1.5 - font_size) / 2;
+
+			DrawText("Tag", tag_font_x, tag_font_y, font_size, BLACK);
+
+			//Draw Cache Value Tag
+			if (mem.value == 0) {
+				u8 tag = mem.tag;
+
+				for (int j = 1; j >= 0; --j) {
+					buffer[j] = tag & 1 ? '1' : '0';
+					tag >>= 1;
+				}
+				buffer[2] = '\0';
+			
+				font_size = 20;
+				font_y_offset = (mem.height - font_size) / 2;
+				font_x_offset = mem.x_offset + 102 + (box_width - MeasureText(buffer, font_size)) / 2;
+
+				DrawText(buffer, font_x_offset, value_y_offset + font_y_offset, font_size, BLACK);
+			}
+		}
 	}
 }
 
