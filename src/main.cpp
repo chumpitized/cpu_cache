@@ -1,11 +1,14 @@
 #include "raylib.h"
 #include <iostream>
 #include <vector>
+#include <stdlib.h>
 
+Color OFFWHITE 	= Color{220, 220, 220, 255};
 Color orange	= Color{239, 156, 102, 255};
 Color yellow	= Color{252, 220, 148, 255};
 Color green 	= Color{200, 207, 160, 255};
 Color blue 		= Color{120, 171, 168, 255};
+Color red 		= Color{246, 114, 128, 255};
 
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -25,8 +28,6 @@ typedef struct Mem_Block {
 
 	u8 tag;
 } Mem_Block;
-
-Color OFFWHITE = Color{220, 220, 220, 255};
 
 u8 instruction_pointer = 0;
 
@@ -58,6 +59,12 @@ void fill_mem_array(int fill_size, u16 x_offset, u16 y_offset, u8 width, u8 heig
 		};
 
 		mem_array.push_back(block);
+	}
+}
+
+void load_ram() {
+	for (int i = 0; i < ram.size(); ++i) {
+		ram[i].value = rand() % 256;
 	}
 }
 
@@ -252,6 +259,14 @@ void draw_cache(u8 block_width) {
 				font_x_offset = mem.x_offset + 102 + (box_width - MeasureText(buffer, font_size)) / 2;
 
 				DrawText(buffer, font_x_offset, value_y_offset + font_y_offset, font_size, BLACK);
+
+				//Draw Dirty Bit Flag
+				tag = tag << 2;
+				int address = i | tag;
+				int dirty_y_offset = value_y_offset + (mem.height) + 5;
+
+				if (ram[address].value == cache[i].value) DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), green);
+				else DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), red);
 			}
 		}
 	}
@@ -261,9 +276,7 @@ void reset_instructions() {
 	if (IsKeyPressed(KEY_R)) {
 		instruction_pointer = 0;
 
-		for (auto& mem : ram) {
-			mem.value = 0;
-		}
+		load_ram();
 
 		for (auto& mem : cache) {
 			mem.value = 0;
@@ -284,19 +297,19 @@ void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_
 	Color color = BLACK;
 
 	for (int i = 0; i < 20; ++i) {
-		if (ip == i) color = RED;
+		if (ip == i) color = red;
 
 		int adjusted_y = y_offset + (i * inst_box_height);
 
 		if (i & 1) DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, WHITE);
-		else DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, LIGHTGRAY);
+		else DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, OFFWHITE);
 
 		if (i == 0) {
-			draw_instruction_text("int a = 5", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[0] = 5", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 1) {
-			draw_instruction_text("int b = 3", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[1] = 3", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 2) {
@@ -306,22 +319,40 @@ void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_
 		if (i == 3) {
 			draw_instruction_text("c + 1", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
+
+		if (i == 4) {
+			draw_instruction_text("int d = 10", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+		}
+
 	}
 }
 
 void draw_instruction_pointer(float x_offset, float y_offset, float inst_box_width, float inst_box_height) {
-	DrawRectangleLinesEx(Rectangle{x_offset, y_offset + (instruction_pointer * inst_box_height), inst_box_width, inst_box_height}, 3, RED);
+	x_offset -= 15;
+	Vector2 v1 = Vector2{x_offset, y_offset};
+	Vector2 v2 = Vector2{x_offset, y_offset + inst_box_height};
+	Vector2 v3 = Vector2{x_offset + 15, y_offset + (inst_box_height / 2)};
+
+	DrawTriangle(v1, v2, v3, WHITE);
+
+	//DrawRectangleLinesEx(Rectangle{x_offset, y_offset + (instruction_pointer * inst_box_height), inst_box_width, inst_box_height}, 3, red);
+
+
 }
 
 void process_instruction_and_inc_instruction_pointer() {
 	u8& i = instruction_pointer;
 
+
+	//need to set dirty bit
 	if (i == 0) {
-		ram[0].value = 5;
+		cache[0].value = 5;
+		//ram[0].value = 5;
 	}
 
 	if (i == 1) {
-		ram[1].value = 3;
+		cache[1].value = 3;
+		//ram[1].value = 3;
 	}
 
 	if (i == 2) {
@@ -332,6 +363,10 @@ void process_instruction_and_inc_instruction_pointer() {
 
 	if (i == 3) {
 		cache[2].value = 8;
+	}
+
+	if (i == 4) {
+		ram[3].value = 10;
 	}
 
 	instruction_pointer++;
@@ -362,6 +397,7 @@ int main() {
 
 	fill_mem_array(16, ram_x_offset, y_offset, block_width, block_height, ram);
 	fill_mem_array(4, cache_x_offset, y_offset, block_width, block_height, cache);
+	load_ram();
 
 	SetTargetFPS(60);
 	InitWindow(1050, 1000, "CPU Cache");
@@ -369,20 +405,22 @@ int main() {
 	while (!WindowShouldClose()) {
 
 		BeginDrawing();
+			//Input			
+			handle_mouse_click();
+			process_instruction();
+			reset_instructions();
+
+			//Draw
 			ClearBackground(Color{5, 5, 5, 255});
-			
+
 			draw_name("RAM", ram_x_offset, y_offset, 50);
 			draw_name("Cache", cache_x_offset, y_offset, 50);
 			draw_name("Instructions", inst_x_offset, y_offset, 50);
-
-			process_instruction();
-			reset_instructions();
 
 			draw_ram(block_width);
 			draw_cache(block_width);
 			draw_instructions(inst_x_offset, y_offset, inst_box_width, inst_box_height, inst_font_size);
 			draw_instruction_pointer(inst_x_offset, y_offset, inst_box_width, inst_box_height);
-			handle_mouse_click();
 
 			DrawFPS(0, 0);
 
