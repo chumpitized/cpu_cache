@@ -328,16 +328,13 @@ void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_
 }
 
 void draw_instruction_pointer(float x_offset, float y_offset, float inst_box_width, float inst_box_height) {
-	x_offset -= 15;
-	Vector2 v1 = Vector2{x_offset, y_offset};
-	Vector2 v2 = Vector2{x_offset, y_offset + inst_box_height};
+	y_offset = y_offset + (inst_box_height * instruction_pointer);	
+	x_offset -= 20;
+	Vector2 v1 = Vector2{x_offset, y_offset + 10};
+	Vector2 v2 = Vector2{x_offset, y_offset + (inst_box_height - 10)};
 	Vector2 v3 = Vector2{x_offset + 15, y_offset + (inst_box_height / 2)};
 
 	DrawTriangle(v1, v2, v3, WHITE);
-
-	//DrawRectangleLinesEx(Rectangle{x_offset, y_offset + (instruction_pointer * inst_box_height), inst_box_width, inst_box_height}, 3, red);
-
-
 }
 
 void process_instruction_and_inc_instruction_pointer() {
