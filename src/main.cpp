@@ -265,8 +265,16 @@ void draw_cache(u8 block_width) {
 				int address = i | tag;
 				int dirty_y_offset = value_y_offset + (mem.height) + 5;
 
-				if (ram[address].value == cache[i].value) DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), green);
-				else DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), red);
+				if (ram[address].value == cache[i].value) {
+					int font_width = MeasureText("Clean", font_size);
+					DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), green);
+					DrawText("Clean", value_x_offset_left + ((mem.width - font_width) / 2), dirty_y_offset + (((mem.height / 1.5) - font_size) / 2), font_size, BLACK);
+				}
+				else {
+					int font_width = MeasureText("Dirty", font_size);
+					DrawRectangle(value_x_offset_left, dirty_y_offset, 200, (mem.height / 1.5), red);
+					DrawText("Dirty", value_x_offset_left + ((mem.width - font_width) / 2), dirty_y_offset + (((mem.height / 1.5) - font_size) / 2), font_size, BLACK);
+				}
 			}
 		}
 	}
@@ -340,8 +348,6 @@ void draw_instruction_pointer(float x_offset, float y_offset, float inst_box_wid
 void process_instruction_and_inc_instruction_pointer() {
 	u8& i = instruction_pointer;
 
-
-	//need to set dirty bit
 	if (i == 0) {
 		cache[0].value = 5;
 		//ram[0].value = 5;
