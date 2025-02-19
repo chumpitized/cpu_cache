@@ -401,7 +401,7 @@ void process_instruction_and_inc_instruction_pointer() {
 		cache[2].tag = 1;
 	}
 
-	instruction_pointer++;
+	if (i <= 6) i++;
 }
 
 void process_instruction() {
