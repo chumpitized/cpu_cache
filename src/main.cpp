@@ -79,8 +79,6 @@ void try_select(Vector2 mouse_pos, int cache_size) {
 	) {
 		int selected_index = (mouse_pos.y - mem.y_offset) / mem.height;
 
-		cache[selected_index % cache_size].tag = ram[selected_index].tag;
-
 		for (int j = 0; j < ram.size(); j++) {
 			int cache_index = j % cache_size;
 
@@ -363,12 +361,12 @@ void process_instruction_and_inc_instruction_pointer() {
 
 	if (i == 1) {
 		cache[1].value = 3;
-		cache[0].tag = 0;
+		cache[1].tag = 0;
 	}
 
 	if (i == 2) {
 		cache[2].value = cache[0].value + cache[1].value;
-		cache[0].tag = 0;
+		cache[2].tag = 0;
 	}
 
 	if (i == 3) {
@@ -385,19 +383,22 @@ void process_instruction_and_inc_instruction_pointer() {
 	if (i == 5) {
 		ram[1].value = cache[1].value;
 		cache[1].value = 120;
-		cache[1].tag = 2;
+		cache[1].tag = 1;
 	}
 
 	if (i == 6) {
-		cache[0].value = ram[0].value;
-		//cache[1].value = ram[1].value;
+		int address = cache[0].tag << 2 | 0x0;
 
-		cache[0].tag = ram[0].tag;
-		//cache[1].tag = ram[1].tag;
+		ram[address].value 	= cache[0].value;
+		cache[0].value 		= ram[0].value;
+		cache[0].tag		= ram[0].tag;
 
-		ram[2].value = cache[2].value;
+
+		address = cache[2].tag << 2 | 0x2;
+		ram[address].value = cache[2].value;
+
 		cache[2].value = cache[0].value + cache[3].value;
-		cache[2].tag = ram[6].tag;
+		cache[2].tag = 1;
 	}
 
 	instruction_pointer++;
