@@ -313,23 +313,31 @@ void draw_instructions(u16 x_offset, u16 y_offset, u16 inst_box_width, u16 inst_
 		else DrawRectangle(x_offset, adjusted_y, inst_box_width, inst_box_height, OFFWHITE);
 
 		if (i == 0) {
-			draw_instruction_text("RAM[0] = 5", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[0] = 5;", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 1) {
-			draw_instruction_text("RAM[1] = 3", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[1] = 3;", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 2) {
-			draw_instruction_text("int c = a + b", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[2] = RAM[0] + RAM[1];", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 3) {
-			draw_instruction_text("c + 1", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[3] = 10;", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 		if (i == 4) {
-			draw_instruction_text("int d = 10", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+			draw_instruction_text("RAM[4] = 233;", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+		}
+
+		if (i == 5) {
+			draw_instruction_text("RAM[5] = 120;", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
+		}
+
+		if (i == 6) {
+			draw_instruction_text("RAM[6] = RAM[0] + RAM[3];", x_offset, adjusted_y, inst_box_width, inst_box_height, inst_font_size, color);
 		}
 
 	}
@@ -350,26 +358,46 @@ void process_instruction_and_inc_instruction_pointer() {
 
 	if (i == 0) {
 		cache[0].value = 5;
-		//ram[0].value = 5;
+		cache[0].tag = 0;
 	}
 
 	if (i == 1) {
 		cache[1].value = 3;
-		//ram[1].value = 3;
+		cache[0].tag = 0;
 	}
 
 	if (i == 2) {
-		cache[0].value = 5;
-		cache[1].value = 3;
-		ram[2].value = 8;
+		cache[2].value = cache[0].value + cache[1].value;
+		cache[0].tag = 0;
 	}
 
 	if (i == 3) {
-		cache[2].value = 8;
+		cache[3].value = 10;
+		cache[3].tag = 0;
 	}
 
 	if (i == 4) {
-		ram[3].value = 10;
+		ram[0].value = cache[0].value;
+		cache[0].value = 233;
+		cache[0].tag = 1;
+	}
+
+	if (i == 5) {
+		ram[1].value = cache[1].value;
+		cache[1].value = 120;
+		cache[1].tag = 2;
+	}
+
+	if (i == 6) {
+		cache[0].value = ram[0].value;
+		//cache[1].value = ram[1].value;
+
+		cache[0].tag = ram[0].tag;
+		//cache[1].tag = ram[1].tag;
+
+		ram[2].value = cache[2].value;
+		cache[2].value = cache[0].value + cache[3].value;
+		cache[2].tag = ram[6].tag;
 	}
 
 	instruction_pointer++;
@@ -394,16 +422,16 @@ int main() {
 	u8 block_width 		= 200;
 	u8 block_height 	= 50;
 
-	u16 inst_box_width	= 300;
+	u16 inst_box_width	= 317;
 	u16 inst_box_height	= 40;
-	u16 inst_font_size	= 30;
+	u16 inst_font_size	= 20;
 
 	fill_mem_array(16, ram_x_offset, y_offset, block_width, block_height, ram);
 	fill_mem_array(4, cache_x_offset, y_offset, block_width, block_height, cache);
 	load_ram();
 
 	SetTargetFPS(60);
-	InitWindow(1050, 1000, "CPU Cache");
+	InitWindow(1050, 950, "CPU Cache");
 
 	while (!WindowShouldClose()) {
 
