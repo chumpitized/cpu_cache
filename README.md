@@ -16,4 +16,6 @@ Of note are the "index" and "tag" labels beneath the cache. Index refers to the 
 Stepping through the program should help make sense of how these processes work.
 
 ## Write-Back Policy
+
 ## Dirty Flag
+Because we're using a write-back policy, we need a "dirty" flag to determine when to write an evicted cache line to main memory. When the dirty flag is set, meaning that a cache line is out of step (i.e., "ahead") of main memory, the CPU will write that line to RAM on eviction. When a cache line is "clean", no write will occur because the cache and RAM contain the same value.
