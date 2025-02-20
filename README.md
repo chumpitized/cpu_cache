@@ -11,5 +11,9 @@ A direct-mapped CPU cache maps memory addresses to specific indexes / memory blo
 
 We do this by using the modulo operator. For each address in RAM, we simply modulo by the cache size (in this case, 4), which will return a value between 0 and 3. This value represents the index of the mapped cache line.
 
+Of note are the "index" and "tag" labels beneath the cache. Index refers to the selected cache line -- 0 in the image above -- which matches the two least significant bits of that line's RAM-mapped addresses. `0000`, `0100`, `1000`, and `1100` all map to index `00` in the cache. Tag, on the other hand, contains the two most significant bits of the address mapped to a given cache line. Index and tag combine to form a full address, which allows the CPU to discover data in the cache before resorting to main memory. 
+
+Stepping through the program should help make sense of how these processes work.
+
 ## Write-Back Policy
 ## Dirty Flag
