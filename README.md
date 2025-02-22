@@ -15,7 +15,12 @@ Of note are the "index" and "tag" labels beneath the cache. Index refers to the 
 
 Stepping through the program should help make sense of how these processes work.
 
-## Write-Back Policy
+## Write-Allocate and Write-Back Policies
+A "write-allcoate" policy guarantees that when a memory allocation is made, and the address of that allocation does not exist in the cache, it will be written to the CPU cache. (Whether the allocation is also written to main memory depends on a secondary policy, described below.) In contrast, a "no-write-allocate" policy will write the allocation only to main memory. 
+
+A "write-back" policy promises that data in the cache will only be written to main memory once it's been evicted. This means that the cache and main memory may "disagree" on the data stored at a given address; however, the source-of-truth in these matters will always be the CPU cache. Alternatively, a "write-through" policy guarantees that cache allocations will be followed by allocations to main memory. With "write-through" policies, the CPU cache and main memory always retain parity.
+
+In general, "write-allocate" and "write-back" policies are faster than their alternatives because they entail fewer trips to main memory.
 
 ## Dirty Flag
 Because we're using a write-back policy, we need a "dirty" flag to determine when to write an evicted cache line to main memory. When the dirty flag is set, meaning that a cache line is out of step (i.e., "ahead") of main memory, the CPU will write that line to RAM on eviction. When a cache line is "clean", no write will occur because the cache and RAM contain the same value.
