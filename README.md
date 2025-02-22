@@ -2,7 +2,7 @@
 
 <img src="https://github.com/user-attachments/assets/d71c2b7b-0ab6-4075-bdaf-718e34588432" alt="Alt Text" width="590" height="520">
 
-This is a simple simulation of a direct-mapped CPU cache with 8-bit cache lines. It also uses a write-back policy for data storage, which you can see as you step through the fixed instruction set.
+This is a simple visualization of a direct-mapped CPU cache with 8-bit cache lines. It also uses a write-back policy for data storage, which you can see as you step through the fixed instruction set.
 
 Unfortunately, the "simulation" aspect of this project is hard-coded, but the results should match the expected behavior.
 
